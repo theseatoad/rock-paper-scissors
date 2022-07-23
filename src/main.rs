@@ -73,7 +73,16 @@ fn main() {
     // Initalize cli parser.
     let args = Cli::parse();
 
-    // Try to get our move, exits program on error.
+    match play_game(args) {
+            GameResult::UserWin => println!("You win!"),
+            GameResult::Tie => println!("Tie"),
+            GameResult::OpponentWin => println!("You lose!"),
+    }
+
+}
+
+fn play_game(args : Cli) -> GameResult{
+
     let our_move : Move = match Move::from_str(&args.pattern) {
         Ok(x) => x,
         Err(_) => {
@@ -90,16 +99,9 @@ fn main() {
 
     // Generate a random move.
     let opponent_move : Move = rng.gen();
-
     // Let the user know what the move the opponent generated.
     print!("Opponent's move: {:?}. " , opponent_move);
-
-    // Let the user know who won.
-    match calculate_winner(our_move, opponent_move){
-        GameResult::UserWin => println!("You win!"),
-        GameResult::Tie => println!("Tie"),
-        GameResult::OpponentWin => println!("You lose!"),
-    }
+    calculate_winner(our_move, opponent_move)
 }
 
 fn calculate_winner(user: Move, opponent:Move) -> GameResult {
@@ -207,7 +209,7 @@ mod tests {
     }
 
     /** ==== Seeded Random Completeness ==== **/
-    
+
     #[test]
     fn test_distribution_rock(){
         let mut seed = StdRng::seed_from_u64(2);
@@ -229,4 +231,11 @@ mod tests {
         assert_eq!(seeded_move, Move::Scissors)
     }
 
+    /** ==== Play Game ==== **/
+
+    #[test]
+    fn test_play_game_with_seed(){
+        let args = Cli { pattern: String::from("Scissors"), seed: Some(7) };
+        assert_eq!(play_game(args), GameResult::UserWin)
+    }
 }
